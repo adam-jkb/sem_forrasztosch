@@ -6783,14 +6783,14 @@
     (property "Value" "SW_Push" (at 204.47 21.59 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "Button_Switch_SMD:SW_Push_1P1T_NO_CK_PTS125Sx43PSMTR" (at 204.47 21.59 0)
+    (property "Footprint" "" (at 204.47 21.59 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 204.47 21.59 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 0fd717cf-c467-4a55-86d6-90e3d0f6eb69))
-    (pin "2" (uuid 7d9ed590-eaa3-422d-8129-67453c4e3334))
+    (pin "1" (uuid b77aa2bf-5ef5-453d-8275-0fb629eb740e))
+    (pin "2" (uuid e7b4cfae-acd4-4d46-b18d-6bf0b786d109))
     (instances
       (project "forrasztos"
         (path "/3719fe19-68b1-4f28-9f13-f52a8368bbe4"

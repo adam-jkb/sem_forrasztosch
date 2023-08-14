@@ -81,6 +81,6 @@
     )
 
     (stroke (width 0) (type solid)) (fill solid) (layer "Cmts.User") (tstamp f0d32132-2a8d-4603-8a2c-2baae914d39f))
-  (pad "1" thru_hole circle (at -2.5 0) (size 2 2) (drill 1.3) (layers "*.Cu" "*.Paste" "*.Mask") (tstamp 73a740de-e0b7-433d-82ff-edba73f88950))
-  (pad "2" thru_hole circle (at 2.5 0) (size 2 2) (drill 1.3) (layers "*.Cu" "*.Paste" "*.Mask") (tstamp 939e6977-67a3-4e1a-be50-3070de3fb1af))
+  (pad "1" thru_hole circle (at -2.5 0) (size 2 2) (drill 1.3) (layers "*.Cu" "*.Mask") (tstamp 73a740de-e0b7-433d-82ff-edba73f88950))
+  (pad "2" thru_hole circle (at 2.5 0) (size 2 2) (drill 1.3) (layers "*.Cu" "*.Mask") (tstamp 939e6977-67a3-4e1a-be50-3070de3fb1af))
 )

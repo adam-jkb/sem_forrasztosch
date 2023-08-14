@@ -32,6 +32,6 @@
   (fp_arc (start 0.385 -2.85) (mid 3.235 0) (end 0.385 2.85)
     (stroke (width 0.05) (type default)) (layer "F.CrtYd") (tstamp 78483704-be06-4ca8-94d4-0e356e71404a))
   (pad "1" thru_hole oval (at 0 0) (size 3.67 3.1) (drill oval 3.27 2.7) (layers "*.Cu" "*.Mask") (tstamp 9a750156-880d-4759-ae32-048c06787107))
-  (pad "1" connect oval (at 0 0) (size 5.77 5) (layers "B.Cu" "F.Mask") (tstamp 47d458a8-83e7-4ee7-9db8-24850adea451))
+  (pad "1" connect oval (at 0 0) (size 5.77 5) (layers "B.Cu" "B.Mask") (tstamp 47d458a8-83e7-4ee7-9db8-24850adea451))
   (pad "1" connect oval (at 0 0) (size 5.97 5.2) (layers "F.Cu" "F.Mask") (tstamp faa56ed9-3695-475a-bdfe-6b2984834ccd))
 )

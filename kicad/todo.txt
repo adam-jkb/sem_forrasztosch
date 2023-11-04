@@ -1,0 +1,5 @@
+gnd szakadas megszuntet
+rossz oldalon levo cuccok atpakol
+led tuskesor elcsusztat
+power led
+buzzer

@@ -18,15 +18,19 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
+#include "i2c.h"
+#include "tim.h"
+#include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ssd1306.h"
-#include "screen.h"
-#include "gui.h"
-#include "debug_screen.h"
-#include "rotary_encoder.h"
-
+#include "settings.h"
+#include "logic.h"
+#include "io.h"
+#include "amp.h"
+#include "lcdKS0108.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,7 +40,15 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define ESCAPE_NORM    "\033[0m"
+#define ESCAPE_BLACK   "\033[30m"
+#define ESCAPE_RED     "\033[31m"
+#define ESCAPE_GREEN   "\033[32m"
+#define ESCAPE_YELLOW  "\033[33m"
+#define ESCAPE_BLUE    "\033[34m"
+#define ESCAPE_MAGENTA "\033[35m"
+#define ESCAPE_CYAN    "\033[36m"
+#define ESCAPE_WHITE   "\033[37m"
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -45,30 +57,30 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
-
-I2C_HandleTypeDef hi2c1;
-
-TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_ADC1_Init(void);
-static void MX_I2C1_Init(void);
-static void MX_TIM2_Init(void);
-static void MX_TIM3_Init(void);
+static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int __io_putchar(int ch) {
+	ITM_SendChar(ch);
+	return(ch);
+}
+
+
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
+}
+
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
+	//printf("%lu\n", htim->Instance->CNT);	
+}
 
 /* USER CODE END 0 */
 
@@ -79,7 +91,6 @@ static void MX_TIM3_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -88,14 +99,14 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  //causes hard fault
+  //HAL_ADCEx_Calibration_Start(&hadc1);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -104,34 +115,61 @@ int main(void)
   MX_I2C1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
+
+  /* Initialize interrupts */
+  MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
-  HAL_ADCEx_Calibration_Start(&hadc1); 
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_1);  
   HAL_ADC_Start(&hadc1);
+
+  DISPLAY_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  TIM2->CCR1 = 32000;
+  //volatile uint32_t delay;
+  int16_t enc_curr, enc_prev = TIM3->CNT;
+  uint32_t curr, start = HAL_GetTick();
+  uint32_t state_curr1, state_curr2, state_prev2 = LL_GPIO_IsInputPinSet(BTN_2_GPIO_Port, BTN_2_Pin), state_prev1 = LL_GPIO_IsInputPinSet(BTN_1_GPIO_Port, BTN_1_Pin);
+  uint32_t sum = 0;
+  int32_t enc_delta = 0;
+  while (1) {
+	 // for(delay = 0; delay < 100000; delay++);
 
-
-  GPIO_PinState btn1_state;
-  GPIO_PinState btn2_state;
-  GPIO_PinState enc_sw_state;
-  HAL_GPIO_WritePin(LCD_CS1_GPIO_Port, LCD_CS1_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(LCD_CS2_GPIO_Port, LCD_CS2_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET);
-  int cnt;
-  while (1)
-  {
+	  //handle enc
+	  enc_curr = TIM3->CNT;
+	  state_curr1 = LL_GPIO_IsInputPinSet(BTN_1_GPIO_Port, BTN_1_Pin);
+	  state_curr2 = LL_GPIO_IsInputPinSet(BTN_2_GPIO_Port, BTN_2_Pin);
+	  curr = HAL_GetTick();
+	  if (state_curr1 != state_prev1) {
+	  	state_prev1 = state_curr1;
+		if(!state_curr1) {++sum;}
+	  }
+	  if (state_curr2 != state_prev2) {
+	  	state_prev2 = state_curr2;
+		if(!state_curr2) {++sum;}
+	  }
+	  if (enc_curr != enc_prev) {
+		enc_delta = (int32_t)(enc_curr - enc_prev);
+		if(enc_curr % 4 == 0) {
+			printf("click%lu\n",enc_delta);
+		}
+	  	enc_prev = enc_curr;
+	  }
+	  if(curr == start+100) {
+		  start = curr;
+		  if(sum) {
+			  printf("sum = %lu, tim = %lu\n", sum, curr);
+			  sum = 0;
+		  }
+	}
     /* USER CODE END WHILE */
-	cnt = __HAL_TIM_GetCounter(&htim3);
-	btn1_state = HAL_GPIO_ReadPin(BTN_1_GPIO_Port, BTN_1_Pin); 
-	btn2_state = HAL_GPIO_ReadPin(BTN_2_GPIO_Port, BTN_2_Pin); 
-	enc_sw_state = HAL_GPIO_ReadPin(ENC_SW_GPIO_Port, ENC_SW_Pin);
-	HAL_Delay(100);
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -182,255 +220,23 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief ADC1 Initialization Function
-  * @param None
+  * @brief NVIC Configuration.
   * @retval None
   */
-static void MX_ADC1_Init(void)
+static void MX_NVIC_Init(void)
 {
-
-  /* USER CODE BEGIN ADC1_Init 0 */
-
-  /* USER CODE END ADC1_Init 0 */
-
-  ADC_ChannelConfTypeDef sConfig = {0};
-
-  /* USER CODE BEGIN ADC1_Init 1 */
-
-  /* USER CODE END ADC1_Init 1 */
-
-  /** Common config
-  */
-  hadc1.Instance = ADC1;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
-  hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 1;
-  if (HAL_ADC_Init(&hadc1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Channel = ADC_CHANNEL_2;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ADC1_Init 2 */
-
-  /* USER CODE END ADC1_Init 2 */
-
-}
-
-/**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C1_Init(void)
-{
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
-
-}
-
-/**
-  * @brief TIM2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM2_Init(void)
-{
-
-  /* USER CODE BEGIN TIM2_Init 0 */
-
-  /* USER CODE END TIM2_Init 0 */
-
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
-
-  /* USER CODE BEGIN TIM2_Init 1 */
-
-  /* USER CODE END TIM2_Init 1 */
-  htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 65535;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM2_Init 2 */
-
-  /* USER CODE END TIM2_Init 2 */
-  HAL_TIM_MspPostInit(&htim2);
-
-}
-
-/**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM3_Init(void)
-{
-
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
-
-  TIM_Encoder_InitTypeDef sConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 65535;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
-  sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
-  sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
-  sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC1Filter = 0;
-  sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
-  sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
-  sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC2Filter = 0;
-  if (HAL_TIM_Encoder_Init(&htim3, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
-
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LCD_CS1_Pin|LCD_CS2_Pin|LCD_RST_Pin|LCD_D3_Pin
-                          |LCD_D4_Pin|LCD_D6_Pin|LCD_D7_Pin|LCD_D0_Pin
-                          |LCD_D1_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LCD_E_Pin|LCD_RW_Pin|LCD_DI_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : ENC_SW_Pin BTN_1_Pin BTN_2_Pin */
-  GPIO_InitStruct.Pin = ENC_SW_Pin|BTN_1_Pin|BTN_2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : CH1_TILT_Pin CH2_TILT_Pin */
-  GPIO_InitStruct.Pin = CH1_TILT_Pin|CH2_TILT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : LCD_CS1_Pin LCD_CS2_Pin LCD_RST_Pin LCD_D3_Pin
-                           LCD_D4_Pin LCD_D6_Pin LCD_D7_Pin LCD_D0_Pin
-                           LCD_D1_Pin */
-  GPIO_InitStruct.Pin = LCD_CS1_Pin|LCD_CS2_Pin|LCD_RST_Pin|LCD_D3_Pin
-                          |LCD_D4_Pin|LCD_D6_Pin|LCD_D7_Pin|LCD_D0_Pin
-                          |LCD_D1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-  
-  /*Configure GPIO pins : LCD_D2_Pin LCD_D5_Pin */
-  GPIO_InitStruct.Pin = LCD_D2_Pin|LCD_D5_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : LCD_E_Pin LCD_RW_Pin LCD_DI_Pin */
-  GPIO_InitStruct.Pin = LCD_E_Pin|LCD_RW_Pin|LCD_DI_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
+  /* TIM2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(TIM2_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(TIM2_IRQn);
+  /* TIM3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(TIM3_IRQn, 2, 0);
+  HAL_NVIC_EnableIRQ(TIM3_IRQn);
+  /* EXTI15_10_IRQn interrupt configuration */
+  //NVIC_SetPriority(EXTI15_10_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),2, 0));
+  //NVIC_EnableIRQ(EXTI15_10_IRQn);
 }
 
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 /**
@@ -460,7 +266,7 @@ void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\n", file, line) */
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

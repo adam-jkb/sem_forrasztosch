@@ -3,3 +3,4 @@ rossz oldalon levo cuccok atpakol
 led tuskesor elcsusztat
 power led
 buzzer
+separate timers for heating the 2 irons

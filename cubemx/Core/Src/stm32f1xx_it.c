@@ -22,6 +22,7 @@
 #include "stm32f1xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,7 +42,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -55,7 +55,8 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -197,6 +198,59 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32f1xx.s).                    */
 /******************************************************************************/
+
+/**
+  * @brief This function handles TIM2 global interrupt.
+  */
+void TIM2_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM2_IRQn 0 */
+  /* USER CODE END TIM2_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim2);
+  /* USER CODE BEGIN TIM2_IRQn 1 */
+
+  /* USER CODE END TIM2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM3 global interrupt.
+  */
+void TIM3_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM3_IRQn 0 */
+  /* USER CODE END TIM3_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim3);
+  /* USER CODE BEGIN TIM3_IRQn 1 */
+  /* USER CODE END TIM3_IRQn 1 */
+}
+
+/**
+  * @brief This function handles EXTI line[15:10] interrupts.
+  */
+void EXTI15_10_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI15_10_IRQn 0 */
+
+  /* USER CODE END EXTI15_10_IRQn 0 */
+  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_14) != RESET)
+  {
+    LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_14);
+    /* USER CODE BEGIN LL_EXTI_LINE_14 */
+	printf("btn1\n");
+
+    /* USER CODE END LL_EXTI_LINE_14 */
+  }
+  if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_15) != RESET)
+  {
+    LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_15);
+    /* USER CODE BEGIN LL_EXTI_LINE_15 */
+	printf("btn2\n");
+    /* USER CODE END LL_EXTI_LINE_15 */
+  }
+  /* USER CODE BEGIN EXTI15_10_IRQn 1 */
+
+  /* USER CODE END EXTI15_10_IRQn 1 */
+}
 
 /* USER CODE BEGIN 1 */
 

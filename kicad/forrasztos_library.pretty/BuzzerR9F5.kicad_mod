@@ -1,0 +1,160 @@
+(footprint "BuzzerD9RM5"
+	(version 20240108)
+	(generator "pcbnew")
+	(generator_version "8.0")
+	(layer "F.Cu")
+	(descr "Generic Buzzer, D9mm with RM5mm")
+	(tags "buzzer")
+	(property "Reference" "BZ1"
+		(at 3.8 -7.2 180)
+		(layer "F.SilkS")
+		(uuid "e952a625-4361-4e18-b0bf-27a7fa6678ea")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "Buzzer"
+		(at 3.8 7.4 180)
+		(layer "F.Fab")
+		(uuid "4a809fc2-855e-4541-aa23-57c73fd7bda1")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Footprint" "Buzzer_Beeper:Buzzer_12x9.5RM7.6"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "77f9a430-367e-4f25-b3de-c17d6d01891d")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "56f0e97e-d3bf-471d-ab89-1eecf916e836")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" "Buzzer, polarized"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "f6484991-af16-43b3-b545-cf81f61defe7")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(attr through_hole)
+	(fp_circle
+		(center 0 0)
+		(end 4.6 0)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill none)
+		(layer "F.SilkS")
+		(uuid "2f0581cb-1bef-461c-b606-0f73ba2a9dc2")
+	)
+	(fp_circle
+		(center 0 0)
+		(end 4.75 0)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill none)
+		(layer "F.CrtYd")
+		(uuid "37e1898e-8cff-4d77-b511-d7939a1d550a")
+	)
+	(fp_circle
+		(center 0 0)
+		(end 4.5 0)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill none)
+		(layer "F.Fab")
+		(uuid "8096b3c9-748d-4b1f-a2f1-2887fad51771")
+	)
+	(fp_circle
+		(center 3.8 0)
+		(end 4.800001 0)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill none)
+		(layer "F.Fab")
+		(uuid "63ee96db-eeb3-4a1a-b3c0-2bfe5980bf68")
+	)
+	(fp_text user "+"
+		(at -0.01 -2.54 180)
+		(layer "F.SilkS")
+		(uuid "a9d1f509-3d29-49d9-bd5d-204f0347d1b5")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(fp_text user "+"
+		(at -0.01 -2.54 180)
+		(layer "F.Fab")
+		(uuid "3ce9e1e8-47bc-4b75-9cb5-7a460dab2757")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(fp_text user "${REFERENCE}"
+		(at 3.8 -4 180)
+		(layer "F.Fab")
+		(uuid "f5a66323-3586-4108-86bf-447508031669")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" thru_hole rect
+		(at -2.5 0)
+		(size 2 2)
+		(drill 1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "65431ccd-d9e9-4375-ba0f-a4ac97bfaa8e")
+	)
+	(pad "2" thru_hole circle
+		(at 2.5 0)
+		(size 2 2)
+		(drill 1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "ebbd82ce-480f-497a-8bb9-2c65c1255f46")
+	)
+)

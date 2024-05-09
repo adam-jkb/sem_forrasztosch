@@ -1,1 +1,12 @@
 build
+openocd
+swd.fifo
+scripts
+.gdbinit
+todo.txt
+tags
+*.swp
+**/*.swp
+Makefile.bak
+Core/Inc/Backup
+Core/Src/Backup
